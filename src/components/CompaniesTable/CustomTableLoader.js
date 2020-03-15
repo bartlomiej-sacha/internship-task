@@ -10,7 +10,7 @@ export default class CustomTableLoader extends React.Component {
 				{this.props.loading ?
 					<div className='-loading-inner'>
 						
-						<CircularProgress />
+						<CircularProgress size ={80} />
 					</div>
 					:
 					<div />

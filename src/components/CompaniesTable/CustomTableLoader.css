@@ -1,8 +1,8 @@
 .-loading-active{
     position: absolute;
-    left: 50%;
+    
+    left: 47%;
     top: 50%;
     z-index: 1;
-    width: 150px;
-    height: 150px;
+   
 }
