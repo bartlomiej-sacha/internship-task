@@ -19,6 +19,7 @@ export class CompaniesTable extends React.Component {
    
   }
     this.handleCompanyDetails = this.handleCompanyDetails.bind(this);
+    this.handleChange = this.handleChange.bind(this);
 }
 
 
@@ -29,7 +30,11 @@ export class CompaniesTable extends React.Component {
   }
 
 
-
+    handleChange(rowInfo){
+      console.log('elo')
+      console.log(rowInfo)
+      this.props.onClick(rowInfo);
+    }
 
   
 
@@ -38,18 +43,12 @@ export class CompaniesTable extends React.Component {
     const NullComponent = () => null;
 
 
-    let details = null;
-
-    if(this.state.selectedCompany !== null) {
-        details = <CompanyDetails company = {this.state.selectedCompany } />  
-    } else {
-      details = null;
-    }
+    
 
     return (
-      <div id="table">
+      <div id="table" >
        
-        <ReactTable
+        <ReactTable 
           loading={this.props.loading}
           LoadingComponent={CustomTableLoader}
           defaultSorted={[
@@ -59,14 +58,16 @@ export class CompaniesTable extends React.Component {
             }
           ]}
           NoDataComponent={NullComponent}
+          
+          
           getTrProps={(state, rowInfo) => {
             if (rowInfo && rowInfo.row) {
               return {
                 onClick: e => {
 
-                  
-                  this.handleCompanyDetails(rowInfo.original);
-
+                  {this.handleChange(rowInfo.original)}
+                  /* this.handleCompanyDetails(rowInfo.original);
+                  {this.handleChange(rowInfo.original)} */
                   this.setState({
                     selected: rowInfo.index,
                     selectedCompany: rowInfo.original
@@ -87,7 +88,7 @@ export class CompaniesTable extends React.Component {
           columns={this.props.columns}
         ></ReactTable>
 
-       {details}
+       
       </div>
     );
   }

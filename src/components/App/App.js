@@ -2,6 +2,7 @@ import React from 'react';
 import CompaniesTable from '../CompaniesTable/CompaniesTable'
 import './App.css';
 import CompanyDetails from '../CompanyDetails/CompanyDetails';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 export class App extends React.Component {
@@ -33,16 +34,14 @@ export class App extends React.Component {
       ]
     };
       this.printCompanyIncomes = this.printCompanyIncomes.bind(this);
+      this.changeSelectedCompany = this.changeSelectedCompany.bind(this);
    
   }
 
 
 
 
-  changeSelectedCompany(company) {
-      this.setState({ selectedCompany: company })
-  }
-
+ 
  
 
 
@@ -69,10 +68,9 @@ export class App extends React.Component {
         data = this.sumIncomesForEachCompany(data);
         this.setState({ companies: data, loading: false });
 
-        this.state.companies[0].incomes.forEach((val) => {
-         /*  console.log(val)
-           console.log(`Date : ${val.date} Income : ${val.value}`); */
-        }) 
+        
+
+
         
        /*  console.log("new", data); */
       });
@@ -88,8 +86,23 @@ export class App extends React.Component {
         /* console.log(income.value) */
         return total + parseFloat(income.value) ;
       },0).toFixed(2)
+
+      
+      
+      company.incomes.forEach((income) => {
+
+        income.date = new Date(income.date);
+        /* console.log( income.date); */
+
+      }) 
+
+
       /* console.log(`company name: ${company.name} total income : ${company.totalIncome}`) */
     })
+
+
+
+
 
     return companies;
 
@@ -107,9 +120,24 @@ export class App extends React.Component {
     
   }
 
+
+  changeSelectedCompany(company) {
+    console.log(company)
+    
+    
+    this.setState({ selectedCompany: company })
+    
+}
+
   
   render(){
-    
+    let details = null;
+
+    if(this.state.selectedCompany !== null) {
+        details = <CompanyDetails company = {this.state.selectedCompany } />  
+    } else {
+      details = null;
+    }
   
   return (
 
@@ -117,7 +145,7 @@ export class App extends React.Component {
     
     <div className="App">
        
-       {this.state.selectedCompany ? <CompanyDetails/> : <CompaniesTable    data = {this.state.companies} columns = {this.state.columns} loading = {this.state.loading}/>}
+       {this.state.selectedCompany ? details : <CompaniesTable  onClick = {this.changeSelectedCompany}   data = {this.state.companies} columns = {this.state.columns} loading = {this.state.loading}/>}
        
        
     </div>
