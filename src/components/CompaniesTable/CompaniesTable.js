@@ -5,6 +5,8 @@ import "react-table-v6/react-table.css";
 import ReactLoading from "react-loading";
 import CustomTableLoader from "./CustomTableLoader";
 import CompanyDetails from '../CompanyDetails/CompanyDetails'
+import { yellow } from "@material-ui/core/colors";
+
 
 
 
@@ -51,42 +53,62 @@ export class CompaniesTable extends React.Component {
         <ReactTable 
           loading={this.props.loading}
           LoadingComponent={CustomTableLoader}
+          pageSize = { this.props.pageSize}
+          showPageSizeOptions = {false}
           defaultSorted={[
             {
               id: "totalIncome",
               desc: true
             }
           ]}
+          getTrProps = {() => { return {}}}
+          
           NoDataComponent={NullComponent}
-          
-          
+         
+          getProps={(state, table) => {
+             return { style: { height: '100vh'}}
+           }}
+
+
+
+
           getTrProps={(state, rowInfo) => {
             if (rowInfo && rowInfo.row) {
               return {
+                
                 onClick: e => {
-
+                  console.log(rowInfo.row)
                   {this.handleChange(rowInfo.original)}
-                  /* this.handleCompanyDetails(rowInfo.original);
-                  {this.handleChange(rowInfo.original)} */
+                 
+
                   this.setState({
                     selected: rowInfo.index,
                     selectedCompany: rowInfo.original
                   });
-                },
-                style: {
-                  background:
-                    rowInfo.index === this.state.selected ? "#00afec" : "white",
-                  color:
-                    rowInfo.index === this.state.selected ? "white" : "black"
+                }, style: {
+                  cursor: 'pointer',
+                 
                 }
+              
               };
             } else {
               return {};
             }
           }}
+
+
+           
+          
+
+          
+
+        
+
+
           data={this.props.data}
           columns={this.props.columns}
         ></ReactTable>
+        
 
        
       </div>

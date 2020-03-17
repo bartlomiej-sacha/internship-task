@@ -4,43 +4,146 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* .company-details {
-    display: flex;
-    flex-direction: column;
+.company-details {
+  font-family: Verdana, Geneva, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100vh;
+
+  width: 100%;
 }
 
-
-.company-details *{
-    margin: 20px 20px 20px 20px;
-} */
-
-
-.date-pickers {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    
-    margin-top: 10vh;    
+nav {
+  width: 100%;
 }
 
-.date-picker {
-    display: flex;
-    justify-content: center;
-    width: 50%;
+.menu {
+  font-weight: bold;
+
+  
+    align-items: center;
+
+
+  background-color: #007bff;
+  
+  box-shadow: 0px 3px 11px -1px rgba(0, 0, 0, 0.5);
+  font-size: 20px;
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+  font-size: 20px;
+  display: grid;
+  grid-template-columns: 1fr repeat(3, auto) 1fr;
+  grid-column-gap: 5px;
+
+  box-shadow: black;
+}
+
+.menu h1 {
+    font-size: 20px;
+  grid-column-start: 2;
+  color: white;
+  font-weight: bold;
+  margin: 0;
+}
+
+.menu button {
+  color: white;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  outline: 0 !important;
+  cursor: pointer;
+
+    margin-right: auto;
+
+  grid-column-start: 1;
+  font-family: Verdana, Geneva, sans-serif;
+  font-weight: bold;
+  
+}
+
+.details-content {
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .company-incomes {
-    margin-top: 20vh;
-    display: flex;
-    justify-content: space-evenly;
+  margin-top: 10vh;
+  display: flex;
+  justify-content: space-around;
+  width: 100vw;
+  align-items: center;
+  padding-left: 10vw;
+  padding-right: 10vw;
 }
 
-input[type=number] {
-    width: 30vw;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
+.date-pickers {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 10vh;
+  align-items: center;
+  width: 100vw;
+  padding-left: 10vw;
+  padding-right: 10vw;
+  
+}
+
+
+
+label {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu button:active{
+    color: rgb(7, 47, 134);
+}
+
+
+
+
+button{
+    font-weight: bold;
+}
+
+input[type="number"] {
+  width: auto;
+  padding: 12px 20px;
+  margin: 10px 0;
+
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-weight: bold;
+}
+
+   @media only screen and (max-width: 775px) {
+    
+    
+    
+
+    
+    .company-incomes, .date-pickers{
+     
+        margin-left: 0vw;
+        margin-right: 0vw;
+        flex-direction: column;
+    }
+
+    .company-incomes *{
+        width: 100%;
+    }
+
+
+  } 

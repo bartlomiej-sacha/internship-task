@@ -1,8 +1,13 @@
 .-loading-active{
-    position: absolute;
+    position: fixed;
     
-    left: 47%;
-    top: 50%;
-    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+
+    height: 100%;
+    width: 100%;
+    z-index: -1;
    
 }

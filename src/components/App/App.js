@@ -3,6 +3,7 @@ import CompaniesTable from '../CompaniesTable/CompaniesTable'
 import './App.css';
 import CompanyDetails from '../CompanyDetails/CompanyDetails';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table'
 
 
 export class App extends React.Component {
@@ -16,7 +17,8 @@ export class App extends React.Component {
       columns: [
         {
           Header: "Id",
-          accessor: "id" // String-based value accessors!
+          accessor: "id", // String-based value accessors!
+         
         },
         {
           Header: "Name",
@@ -134,7 +136,7 @@ export class App extends React.Component {
     let details = null;
 
     if(this.state.selectedCompany !== null) {
-        details = <CompanyDetails company = {this.state.selectedCompany } />  
+        details = <CompanyDetails  changeSelectedCompany = {this.changeSelectedCompany}   company = {this.state.selectedCompany } />  
     } else {
       details = null;
     }
@@ -145,7 +147,7 @@ export class App extends React.Component {
     
     <div className="App">
        
-       {this.state.selectedCompany ? details : <CompaniesTable  onClick = {this.changeSelectedCompany}   data = {this.state.companies} columns = {this.state.columns} loading = {this.state.loading}/>}
+       {this.state.selectedCompany ? details : <CompaniesTable  pageSize={10} onClick = {this.changeSelectedCompany}   data = {this.state.companies} columns = {this.state.columns} loading = {this.state.loading}/>}
        
        
     </div>
