@@ -42,9 +42,9 @@ export class CompaniesTable extends React.Component {
               return {
                 onClick: e => {
 
-                  {
+                  
                     this.handleClick(rowInfo.original);
-                  }
+                  
 
                  
                 },

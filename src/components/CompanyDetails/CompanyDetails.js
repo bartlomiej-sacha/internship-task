@@ -20,6 +20,7 @@ export class CompanyDetails extends React.Component {
       endDate: new Date(y, m , 0, 23, 59, 59),
       dataHasChanged: false,
       lastMonthIncome: 0,
+      averageIncome: 0,
       averageLabel: "Average total income : ",
       monthLabel: "Last month income : "
     };
@@ -56,7 +57,7 @@ export class CompanyDetails extends React.Component {
 
   /** returns calculated average of company incomes */
   getAverageTotalIncome(company) {
-    if (company.incomes.length != 0) {
+    if (company.incomes.length !== 0) {
       return this.roundToTwoDec(
         company.totalIncome / company.incomes.length + 1
       );
@@ -81,9 +82,9 @@ export class CompanyDetails extends React.Component {
         return total + parseFloat(income.value);
       }, 0);
 
-    if (totalRangeIncome != 0) {
+    if (totalRangeIncome !== 0) {
       rangeAverageIncome = this.roundToTwoDec(totalRangeIncome / itemCount);
-    }
+    } 
     return rangeAverageIncome;
   }
 
@@ -94,8 +95,8 @@ export class CompanyDetails extends React.Component {
       .reduce((total, income) => {
         return total + parseFloat(income.value);
       }, 0)
-      .toFixed(2);
-    return rangeTotalIncome;
+      
+    return this.roundToTwoDec(rangeTotalIncome);
   }
 
   /** Lifecycle method sets values of input fields in state after component mounted */
@@ -125,12 +126,12 @@ export class CompanyDetails extends React.Component {
 
   /**  returns object which stores monthly incomes by filtering incomes by date and suming them using dynamic property keys of object*/
   getIncomeForEachMonth(incomes) {
-    let sortedIncomes = incomes.sort(function(a, b) {
+    incomes.sort(function(a, b) {
       return new Date(a.date) - new Date(b.date);
     });
     var incomesByMonth = {};
 
-    incomes.filter(function(income, index) {
+    incomes.filter(function(income){
       let date = new Date(income.date);
       let monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
       let monthEnd = new Date(date.getFullYear(),date.getMonth() + 1,0,23,59,59);
@@ -142,6 +143,7 @@ export class CompanyDetails extends React.Component {
           incomesByMonth[`${monthStart}`] += parseFloat(income.value);
         }
       }
+      
     });
 
     return incomesByMonth;
@@ -207,7 +209,6 @@ export class CompanyDetails extends React.Component {
               <label> {this.state.averageLabel} </label>
 
               <input
-                onInput={this.handleLabelChange}
                 id="average-total-income"
                 type="number"
                 value={this.state.averageIncome}
@@ -220,7 +221,6 @@ export class CompanyDetails extends React.Component {
               <label>{this.state.monthLabel} </label>
 
               <input
-                onInput={this.handleLabelChange}
                 id="last-month-income"
                 type="number"
                 value={this.state.lastMonthIncome}
