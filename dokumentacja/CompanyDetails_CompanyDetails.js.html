@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: CompanyDetails/CompanyDetails.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: CompanyDetails/CompanyDetails.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import CustomInput from "../CustomInput/CustomInput";
+import Graph from "../Graph/Graph";
+import "./CompanyDetails.css";
+
+/** Component rendering selected company view and calculating required values storing them in state*/
+export class CompanyDetails extends React.Component {
+  
+  
+  constructor(props) {
+    super(props);
+    var date = new Date(),
+      y = date.getFullYear(),
+      m = date.getMonth();
+
+    this.state = {
+      startDate: new Date(y, m -1, 1),
+      endDate: new Date(y, m , 0, 23, 59, 59),
+      dataHasChanged: false,
+      lastMonthIncome: 0,
+      averageLabel: "Average total income : ",
+      monthLabel: "Last month income : "
+    };
+    this.getRangeIncome = this.getRangeIncome.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
+    this.handleLabelChange = this.handleLabelChange.bind(this);
+    this.handleBackButton = this.handleBackButton.bind(this);
+    this.getIncomeForEachMonth = this.getIncomeForEachMonth.bind(this);
+    this.filterIncomesByDate = this.filterIncomesByDate.bind(this);
+  }
+
+  /** helper function for rounding numbers to 2 decimal places*/
+  roundToTwoDec(value) {
+    return Math.round(value * 100) / 100;
+  }
+
+
+   /** sets dates from both DatePickers to store date range in state and then calls for updating company details in state */
+  handleDateChange(dateProperty, date) {
+    this.setState(
+      {
+        [dateProperty]: date
+      },
+      function() {
+        this.setState({
+          lastMonthIncome: this.getRangeIncome(this.props.company.incomes),
+          averageIncome: this.getRangeAverageIncome(this.props.company.incomes),
+          averageLabel: "Average income in date range  : ",
+          monthLabel: "total income in date range : "
+        });
+      }
+    );
+  };
+
+  /** returns calculated average of company incomes */
+  getAverageTotalIncome(company) {
+    if (company.incomes.length != 0) {
+      return this.roundToTwoDec(
+        company.totalIncome / company.incomes.length + 1
+      );
+    } else return 0;
+  }
+
+  /** callback function for filtering incomes in date range */
+  filterIncomesByDate(incomes) {
+    var date = new Date(incomes.date);
+    return date >= this.state.startDate &amp;&amp; date &lt;= this.state.endDate;
+  }
+
+  /**returns calculated average of company incomes in date range */
+  getRangeAverageIncome(incomes) {
+    let rangeAverageIncome = 0;
+    let itemCount = 0;
+
+    let totalRangeIncome = incomes
+      .filter(this.filterIncomesByDate)
+      .reduce((total, income) => {
+        itemCount++;
+        return total + parseFloat(income.value);
+      }, 0);
+
+    if (totalRangeIncome != 0) {
+      rangeAverageIncome = this.roundToTwoDec(totalRangeIncome / itemCount);
+    }
+    return rangeAverageIncome;
+  }
+
+  /**returns returns the sum  of company incomes in date range */
+  getRangeIncome(incomes) {
+    var rangeIncomes = incomes.filter(this.filterIncomesByDate);
+    let rangeTotalIncome = rangeIncomes
+      .reduce((total, income) => {
+        return total + parseFloat(income.value);
+      }, 0)
+      .toFixed(2);
+    return rangeTotalIncome;
+  }
+
+  /** Lifecycle method sets values of input fields in state after component mounted */
+  componentDidMount() {
+    let lastMonthIncome = this.getRangeIncome(this.props.company.incomes);
+    let averageIncome = this.getAverageTotalIncome(this.props.company);
+    this.setState({
+      lastMonthIncome: lastMonthIncome,
+      averageIncome: averageIncome
+    });
+  }
+
+  /** changes labels of input fields after user changed date range*/
+  handleLabelChange(e) {
+    this.setState({
+      averageLabel: "Average income in date range  : ",
+      monthLabel: "total income in date range : "
+    });
+  }
+
+ /** call parent function to switch view*/
+  handleBackButton() {
+    this.props.changeSelectedCompany(null);
+  }
+
+
+
+  /**  returns object which stores monthly incomes by filtering incomes by date and suming them using dynamic property keys of object*/
+  getIncomeForEachMonth(incomes) {
+    let sortedIncomes = incomes.sort(function(a, b) {
+      return new Date(a.date) - new Date(b.date);
+    });
+    var incomesByMonth = {};
+
+    incomes.filter(function(income, index) {
+      let date = new Date(income.date);
+      let monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      let monthEnd = new Date(date.getFullYear(),date.getMonth() + 1,0,23,59,59);
+
+      if (date >= monthStart &amp;&amp; date &lt;= monthEnd) {
+        if (incomesByMonth[`${monthStart}`] === undefined) {
+          incomesByMonth[`${monthStart}`] = parseFloat(income.value);
+        } else {
+          incomesByMonth[`${monthStart}`] += parseFloat(income.value);
+        }
+      }
+    });
+
+    return incomesByMonth;
+  }
+
+/**  renders company details view */
+  render() {
+    return (
+      &lt;div className="company-details">
+        &lt;ul className="header">
+          &lt;button onClick={this.handleBackButton}> {"&lt; Powrót"} &lt;/button>
+          &lt;h1>
+            Company Id: {this.props.company.id}, Name: {this.props.company.name}
+            , City: {this.props.company.city}
+          &lt;/h1>
+        &lt;/ul>
+
+        &lt;div className="details-content">
+          &lt;div className="date-pickers">
+            &lt;label> Income from &lt;/label>
+
+            &lt;div className="wrapper">
+              &lt;DatePicker
+                selected={this.state.startDate ? this.state.startDate : null}
+                onChange={value => {
+                  if (value &lt; this.state.endDate) {
+                    this.handleDateChange("startDate", value);
+                  } else {
+                    alert(
+                      `Please chose earlier date than : ${this.state.endDate
+                        .toString()
+                        .slice(3, 15)}`
+                    );
+                  }
+                }}
+                customInput={&lt;CustomInput />}
+              />
+            &lt;/div>
+
+            &lt;label> to &lt;/label>
+
+            &lt;div className="wrapper">
+              &lt;DatePicker
+                selected={this.state.endDate ? this.state.endDate : null}
+                onChange={value => {
+                  if (value > this.state.startDate) {
+                    this.handleDateChange("endDate", value);
+                  } else {
+                    alert(
+                      `Please chose later date than : ${this.state.startDate
+                        .toString()
+                        .slice(3, 15)}`
+                    );
+                  }
+                }}
+                customInput={&lt;CustomInput />}
+              />
+            &lt;/div>
+          &lt;/div>
+
+          &lt;div className="company-incomes">
+            &lt;div className="wrapper">
+              &lt;label> {this.state.averageLabel} &lt;/label>
+
+              &lt;input
+                onInput={this.handleLabelChange}
+                id="average-total-income"
+                type="number"
+                value={this.state.averageIncome}
+                placeholder="0,00"
+                readOnly
+              >&lt;/input>
+            &lt;/div>
+
+            &lt;div className="wrapper">
+              &lt;label>{this.state.monthLabel} &lt;/label>
+
+              &lt;input
+                onInput={this.handleLabelChange}
+                id="last-month-income"
+                type="number"
+                value={this.state.lastMonthIncome}
+                placeholder="0,00"
+                readOnly
+              >&lt;/input>
+            &lt;/div>
+          &lt;/div>
+
+          &lt;Graph
+            data={this.getIncomeForEachMonth(this.props.company.incomes)}
+            company={this.props.company}
+          />
+        &lt;/div>
+      &lt;/div>
+    );
+  }
+}
+
+export default CompanyDetails;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="App.html">App</a></li><li><a href="CompaniesTable.html">CompaniesTable</a></li><li><a href="CompanyDetails.html">CompanyDetails</a></li><li><a href="CustomTableLoader.html">CustomTableLoader</a></li><li><a href="Graph.html">Graph</a></li></ul><h3>Global</h3><ul><li><a href="global.html#CustomInput">CustomInput</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Mar 18 2020 01:12:07 GMT+0100 (GMT+01:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

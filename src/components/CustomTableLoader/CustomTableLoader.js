@@ -2,7 +2,10 @@ import React from "react";
 import { CircularProgress } from '@material-ui/core';
 import './CustomTableLoader.css'
 
-export default class CustomTableLoader extends React.Component {
+
+
+/** custom loading component used by React Table */
+export class CustomTableLoader extends React.Component {
 	render() {
 		return (
 			<div className='-loading-active'>
@@ -19,3 +22,5 @@ export default class CustomTableLoader extends React.Component {
 		);
 	}
 }
+
+export default CustomTableLoader;

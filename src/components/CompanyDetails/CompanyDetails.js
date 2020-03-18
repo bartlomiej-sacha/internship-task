@@ -1,18 +1,23 @@
 import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Button from "react-bootstrap/Button";
-import CustomInput from "./CustomInput";
-
+import CustomInput from "../CustomInput/CustomInput";
+import Graph from "../Graph/Graph";
 import "./CompanyDetails.css";
 
+/** Component rendering selected company view and calculating required values storing them in state*/
 export class CompanyDetails extends React.Component {
+  
+  
   constructor(props) {
     super(props);
+    var date = new Date(),
+      y = date.getFullYear(),
+      m = date.getMonth();
 
     this.state = {
-      startDate: null,
-      endDate: null,
+      startDate: new Date(y, m -1, 1),
+      endDate: new Date(y, m , 0, 23, 59, 59),
       dataHasChanged: false,
       lastMonthIncome: 0,
       averageLabel: "Average total income : ",
@@ -22,27 +27,26 @@ export class CompanyDetails extends React.Component {
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleLabelChange = this.handleLabelChange.bind(this);
     this.handleBackButton = this.handleBackButton.bind(this);
+    this.getIncomeForEachMonth = this.getIncomeForEachMonth.bind(this);
+    this.filterIncomesByDate = this.filterIncomesByDate.bind(this);
   }
 
-  handleDateChange = (dateProperty, date) => {
-    console.log(dateProperty);
+  /** helper function for rounding numbers to 2 decimal places*/
+  roundToTwoDec(value) {
+    return Math.round(value * 100) / 100;
+  }
 
+
+   /** sets dates from both DatePickers to store date range in state and then calls for updating company details in state */
+  handleDateChange(dateProperty, date) {
     this.setState(
       {
         [dateProperty]: date
       },
       function() {
         this.setState({
-          lastMonthIncome: this.getRangeIncome(
-            this.props.company,
-            this.state.startDate,
-            this.state.endDate
-          ),
-          averageIncome: this.getRangeAverageIncome(
-            this.props.company,
-            this.state.startDate,
-            this.state.endDate
-          ),
+          lastMonthIncome: this.getRangeIncome(this.props.company.incomes),
+          averageIncome: this.getRangeAverageIncome(this.props.company.incomes),
           averageLabel: "Average income in date range  : ",
           monthLabel: "total income in date range : "
         });
@@ -50,74 +54,61 @@ export class CompanyDetails extends React.Component {
     );
   };
 
+  /** returns calculated average of company incomes */
   getAverageTotalIncome(company) {
-    return (company.totalIncome / company.incomes.length).toFixed(2);
+    if (company.incomes.length != 0) {
+      return this.roundToTwoDec(
+        company.totalIncome / company.incomes.length + 1
+      );
+    } else return 0;
   }
 
-  getRangeAverageIncome(company, firstDay, lastDay) {
-    var resultProductData = company.incomes.filter(function(product) {
-      var date = new Date(product.date);
+  /** callback function for filtering incomes in date range */
+  filterIncomesByDate(incomes) {
+    var date = new Date(incomes.date);
+    return date >= this.state.startDate && date <= this.state.endDate;
+  }
 
-      return date >= firstDay && date <= lastDay;
-    });
+  /**returns calculated average of company incomes in date range */
+  getRangeAverageIncome(incomes) {
+    let rangeAverageIncome = 0;
+    let itemCount = 0;
 
-    let totalLastMonthIncome = resultProductData
+    let totalRangeIncome = incomes
+      .filter(this.filterIncomesByDate)
       .reduce((total, income) => {
+        itemCount++;
         return total + parseFloat(income.value);
-      }, 0)
-      
+      }, 0);
 
-    if (totalLastMonthIncome != 0) {
-      totalLastMonthIncome = totalLastMonthIncome / resultProductData.length;
+    if (totalRangeIncome != 0) {
+      rangeAverageIncome = this.roundToTwoDec(totalRangeIncome / itemCount);
     }
-
-    console.log("average " + totalLastMonthIncome.toFixed(2));
-    return totalLastMonthIncome.toFixed(2);
+    return rangeAverageIncome;
   }
 
-  getRangeIncome(company, firstDay, lastDay) {
-    console.log(company);
-    console.log("licze pomiedzy " + firstDay + " a " + lastDay);
-    var resultProductData = company.incomes.filter(function(product) {
-      var date = new Date(product.date);
-
-      return date >= firstDay && date <= lastDay;
-    });
-
-    let totalLastMonthIncome = resultProductData
+  /**returns returns the sum  of company incomes in date range */
+  getRangeIncome(incomes) {
+    var rangeIncomes = incomes.filter(this.filterIncomesByDate);
+    let rangeTotalIncome = rangeIncomes
       .reduce((total, income) => {
         return total + parseFloat(income.value);
       }, 0)
       .toFixed(2);
-
-    console.log("income " + totalLastMonthIncome);
-    return totalLastMonthIncome;
+    return rangeTotalIncome;
   }
 
+  /** Lifecycle method sets values of input fields in state after component mounted */
   componentDidMount() {
-    var date = new Date(),
-      y = date.getFullYear() - 1,
-      m = date.getMonth();
-    var firstDay = new Date(y, m, 1);
-    var lastDay = new Date(y, m + 1, 0, 23, 59, 59);
-
-    let lastMonthIncome = this.getRangeIncome(
-      this.props.company,
-      firstDay,
-      lastDay
-    );
+    let lastMonthIncome = this.getRangeIncome(this.props.company.incomes);
     let averageIncome = this.getAverageTotalIncome(this.props.company);
-
-    this.setState(state => {
-      state.startDate = firstDay;
-      state.endDate = lastDay;
-      state.lastMonthIncome = lastMonthIncome;
-      state.averageIncome = averageIncome;
-
-      return state;
+    this.setState({
+      lastMonthIncome: lastMonthIncome,
+      averageIncome: averageIncome
     });
   }
 
+  /** changes labels of input fields after user changed date range*/
   handleLabelChange(e) {
     this.setState({
       averageLabel: "Average income in date range  : ",
@@ -125,113 +116,125 @@ export class CompanyDetails extends React.Component {
     });
   }
 
+ /** call parent function to switch view*/
   handleBackButton() {
     this.props.changeSelectedCompany(null);
   }
 
+
+
+  /**  returns object which stores monthly incomes by filtering incomes by date and suming them using dynamic property keys of object*/
+  getIncomeForEachMonth(incomes) {
+    let sortedIncomes = incomes.sort(function(a, b) {
+      return new Date(a.date) - new Date(b.date);
+    });
+    var incomesByMonth = {};
+
+    incomes.filter(function(income, index) {
+      let date = new Date(income.date);
+      let monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      let monthEnd = new Date(date.getFullYear(),date.getMonth() + 1,0,23,59,59);
+
+      if (date >= monthStart && date <= monthEnd) {
+        if (incomesByMonth[`${monthStart}`] === undefined) {
+          incomesByMonth[`${monthStart}`] = parseFloat(income.value);
+        } else {
+          incomesByMonth[`${monthStart}`] += parseFloat(income.value);
+        }
+      }
+    });
+
+    return incomesByMonth;
+  }
+
+/**  renders company details view */
   render() {
     return (
       <div className="company-details">
-        <header id="nav" className="nav">
-          <nav>
-            <ul className="menu" id="menu">
-              <button onClick={this.handleBackButton}> {"< Powrót"} </button>
-              <h1>
-                Company Id: {this.props.company.id}, Name:{" "}
-                {this.props.company.name}, City: {this.props.company.city}
-              </h1>
-            </ul>
-          </nav>
-        </header>
+        <ul className="header">
+          <button onClick={this.handleBackButton}> {"< Powrót"} </button>
+          <h1>
+            Company Id: {this.props.company.id}, Name: {this.props.company.name}
+            , City: {this.props.company.city}
+          </h1>
+        </ul>
 
+        <div className="details-content">
+          <div className="date-pickers">
+            <label> Income from </label>
 
-        <div className = "details-content">
-
-        <div className = "date-pickers">
-
-        <label> Income from </label>
-        
             <div className="wrapper">
-            <DatePicker
-              selected={this.state.startDate ? this.state.startDate : null}
-              onChange={value => {
-                if (value < this.state.endDate) {
-                  this.handleDateChange("startDate", value);
-                } else {
-                  alert(
-                    `Please chose earlier date than : ${this.state.endDate
-                      .toString()
-                      .slice(3, 15)}`
-                  );
-                }
-              }}
-              customInput={<CustomInput />}
-              
-            />
-         </div>
+              <DatePicker
+                selected={this.state.startDate ? this.state.startDate : null}
+                onChange={value => {
+                  if (value < this.state.endDate) {
+                    this.handleDateChange("startDate", value);
+                  } else {
+                    alert(
+                      `Please chose earlier date than : ${this.state.endDate
+                        .toString()
+                        .slice(3, 15)}`
+                    );
+                  }
+                }}
+                customInput={<CustomInput />}
+              />
+            </div>
 
-          <label> to </label>
-        
-          <div className="wrapper">
-            <DatePicker
-              selected={this.state.endDate ? this.state.endDate : null}
-              onChange={value => {
-                if (value > this.state.startDate) {
-                  this.handleDateChange("endDate", value);
-                } else {
-                  alert(
-                    `Please chose later date than : ${this.state.startDate
-                      .toString()
-                      .slice(3, 15)}`
-                  );
-                }
-              }}
-              customInput={<CustomInput />}
-            />
+            <label> to </label>
+
+            <div className="wrapper">
+              <DatePicker
+                selected={this.state.endDate ? this.state.endDate : null}
+                onChange={value => {
+                  if (value > this.state.startDate) {
+                    this.handleDateChange("endDate", value);
+                  } else {
+                    alert(
+                      `Please chose later date than : ${this.state.startDate
+                        .toString()
+                        .slice(3, 15)}`
+                    );
+                  }
+                }}
+                customInput={<CustomInput />}
+              />
+            </div>
           </div>
 
-        </div>
+          <div className="company-incomes">
+            <div className="wrapper">
+              <label> {this.state.averageLabel} </label>
 
+              <input
+                onInput={this.handleLabelChange}
+                id="average-total-income"
+                type="number"
+                value={this.state.averageIncome}
+                placeholder="0,00"
+                readOnly
+              ></input>
+            </div>
 
-        <div className="company-incomes">
-          <div className="wrapper">
-            <label> {this.state.averageLabel} </label>
+            <div className="wrapper">
+              <label>{this.state.monthLabel} </label>
 
-            <input
-              onInput={this.handleLabelChange}
-              id="average-total-income"
-              type="number"
-              value={this.state.averageIncome}
-              placeholder="0,00"
-              readOnly
-            ></input>
+              <input
+                onInput={this.handleLabelChange}
+                id="last-month-income"
+                type="number"
+                value={this.state.lastMonthIncome}
+                placeholder="0,00"
+                readOnly
+              ></input>
+            </div>
           </div>
 
-          <div className="wrapper">
-            <label>{this.state.monthLabel} </label>
-
-            <input
-              onInput={this.handleLabelChange}
-              id="last-month-income"
-              type="number"
-              value={this.state.lastMonthIncome}
-              placeholder="0,00"
-              readOnly
-            ></input>
-          </div>
+          <Graph
+            data={this.getIncomeForEachMonth(this.props.company.incomes)}
+            company={this.props.company}
+          />
         </div>
-
-
-
-
-
-        </div>
-
-
-
-          
-
-        
       </div>
     );
   }

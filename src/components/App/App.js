@@ -1,13 +1,12 @@
-import React from 'react';
-import CompaniesTable from '../CompaniesTable/CompaniesTable'
-import './App.css';
-import CompanyDetails from '../CompanyDetails/CompanyDetails';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table'
+import React from "react";
+import CompaniesTable from "../CompaniesTable/CompaniesTable";
+import "./App.css";
+import CompanyDetails from "../CompanyDetails/CompanyDetails";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 
+  /** Main component which  stores fetched data and variables to handle view switching logic */
 export class App extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -17,8 +16,7 @@ export class App extends React.Component {
       columns: [
         {
           Header: "Id",
-          accessor: "id", // String-based value accessors!
-         
+          accessor: "id"
         },
         {
           Header: "Name",
@@ -35,24 +33,16 @@ export class App extends React.Component {
         }
       ]
     };
-      this.printCompanyIncomes = this.printCompanyIncomes.bind(this);
-      this.changeSelectedCompany = this.changeSelectedCompany.bind(this);
-   
+    
+    this.changeSelectedCompany = this.changeSelectedCompany.bind(this);
   }
 
 
-
-
- 
- 
-
-
-
+/** Lifecycle method resposible for fetching data and storing them in component state, uses fetched companies ids to fetch their incomes data*/
   componentDidMount() {
     fetch("https://recruitment.hal.skygate.io/companies")
       .then(response => response.json())
       .then(result => {
-        console.log("old", result);
         return result;
       })
       .then(async data => {
@@ -62,95 +52,66 @@ export class App extends React.Component {
               .then(response => response.json())
               .then(data => {
                 array[index] = { ...e, ...data };
-                console.log("update");
               });
           })
         );
 
         data = this.sumIncomesForEachCompany(data);
         this.setState({ companies: data, loading: false });
-
-        
-
-
-        
-       /*  console.log("new", data); */
       });
   }
 
 
+  /** assign property totalIncome for each company by reducing their incomes*/
+  sumIncomesForEachCompany(companies) {
+    companies.forEach(company => {
+      company.totalIncome = company.incomes
+        .reduce((total, income) => {
+          return total + parseFloat(income.value);
+        }, 0)
+        .toFixed(2);
 
-  sumIncomesForEachCompany(companies){
-
-    companies.forEach((company) => {
-     /*  console.log('przerabiana company : '+company.name) */
-      company.totalIncome = company.incomes.reduce((total, income) => {
-        /* console.log(income.value) */
-        return total + parseFloat(income.value) ;
-      },0).toFixed(2)
-
-      
-      
-      company.incomes.forEach((income) => {
-
+      company.incomes.forEach(income => {
         income.date = new Date(income.date);
-        /* console.log( income.date); */
-
-      }) 
-
-
-      /* console.log(`company name: ${company.name} total income : ${company.totalIncome}`) */
-    })
-
-
-
-
-
+      });
+    });
     return companies;
-
   }
-
-
 
   
-
-
-  printCompanyIncomes(id) {
-
-
-    console.log(`Date : ${this.state.companies[1].city} `);
-    
-  }
-
-
+/** function for communication with child component, stores selected company in state*/
   changeSelectedCompany(company) {
-    console.log(company)
-    
-    
-    this.setState({ selectedCompany: company })
-    
-}
+    this.setState({ selectedCompany: company });
+  }
 
-  
-  render(){
+
+  /** by using ternary operator renders table with companies or selected company view */
+  render() {
     let details = null;
-
-    if(this.state.selectedCompany !== null) {
-        details = <CompanyDetails  changeSelectedCompany = {this.changeSelectedCompany}   company = {this.state.selectedCompany } />  
+    if (this.state.selectedCompany !== null) {
+      details = (
+        <CompanyDetails
+          changeSelectedCompany={this.changeSelectedCompany}
+          company={this.state.selectedCompany}
+        />
+      );
     } else {
       details = null;
     }
-  
-  return (
 
-           
-    
-    <div className="App">
-       
-       {this.state.selectedCompany ? details : <CompaniesTable  pageSize={10} onClick = {this.changeSelectedCompany}   data = {this.state.companies} columns = {this.state.columns} loading = {this.state.loading}/>}
-       
-       
-    </div>
+    return (
+      <div className="App">
+        {this.state.selectedCompany ? details : 
+        (
+          <CompaniesTable
+            pageSize={10}
+            onClick={this.changeSelectedCompany}
+            data={this.state.companies}
+            columns={this.state.columns}
+            loading={this.state.loading}
+          />
+        )}
+      </div>
     );
   }
 }
